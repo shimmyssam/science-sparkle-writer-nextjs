@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Heart, Star, CheckCircle, Lightbulb, BookOpen, Target } from 'lucide-react';
+import type { FeedbackData } from '@/types/feedback';
 
 // 마크다운 볼드 텍스트를 HTML로 변환하는 함수
 const renderBoldText = (text: string) => {
@@ -10,31 +10,7 @@ const renderBoldText = (text: string) => {
 };
 
 interface FeedbackProps {
-  feedback: {
-    studentName: string;
-    strengths: string[];
-    improvedSentences: Array<{
-      original: string;
-      improved: string;
-    }>;
-    scientificKnowledge: {
-      present: string[];
-      missing: string[];
-      suggestions: string;
-    };
-    logicalFlow: {
-      rating: number;
-      comment: string;
-    };
-    ratings: {
-      content: { stars: number; comment: string };
-      logicalFlow: { stars: number; comment: string };
-      sentenceExpression: { stars: number; comment: string };
-      scientificKnowledge: { stars: number; comment: string };
-      readerAwareness: { stars: number; comment: string };
-    };
-    tips: string[];
-  };
+  feedback: FeedbackData;
 }
 
 const StarRating = ({ stars }: { stars: number }) => {
@@ -155,7 +131,7 @@ export const FeedbackDisplay = ({ feedback }: FeedbackProps) => {
             </div>
           </div>
           
-          {feedback.scientificKnowledge?.missing?.length > 0 && (
+          {feedback.scientificKnowledge?.missing && feedback.scientificKnowledge.missing.length > 0 && (
             <div>
               <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
                 <Target className="h-4 w-4 text-accent" />

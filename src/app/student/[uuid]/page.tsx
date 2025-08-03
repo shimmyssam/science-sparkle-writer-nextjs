@@ -9,16 +9,23 @@ import { ArrowLeft, Sparkles, User, TrendingUp, Calendar, BookOpen, Trophy } fro
 import { StudentFeedbackCard } from '@/components/StudentFeedbackCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { StudentFeedbackRow, FeedbackData } from '@/types/feedback';
 
 export default function StudentDashboardPage() {
   const params = useParams();
   const router = useRouter();
   const uuid = params.uuid as string;
-  const [feedbacks, setFeedbacks] = useState([]);
+  const [feedbacks, setFeedbacks] = useState<StudentFeedbackRow[]>([]);
   const [studentName, setStudentName] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [stats, setStats] = useState({
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<{
+    totalSubmissions: number;
+    averageRating: number;
+    improvementTrend: number;
+    firstSubmission: string | null;
+    latestSubmission: string | null;
+  }>({
     totalSubmissions: 0,
     averageRating: 0,
     improvementTrend: 0,
@@ -51,14 +58,14 @@ export default function StudentDashboardPage() {
 
         if (error) throw error;
 
-        setFeedbacks(data || []);
+        setFeedbacks((data || []) as unknown as StudentFeedbackRow[]);
         
         // 통계 계산
         if (data && data.length > 0) {
           const ratings = data.map(feedback => {
-            const feedbackData = feedback.teacher_modified_feedback || feedback.feedback_data;
-            if (feedbackData.ratings) {
-              return Object.values(feedbackData.ratings).reduce((sum: number, rating: any) => sum + rating.stars, 0) / 
+            const feedbackData = (feedback.teacher_modified_feedback || feedback.feedback_data) as unknown as FeedbackData;
+            if (feedbackData?.ratings) {
+              return Object.values(feedbackData.ratings).reduce((sum: number, rating) => sum + rating.stars, 0) / 
                      Object.keys(feedbackData.ratings).length;
             }
             return 0;

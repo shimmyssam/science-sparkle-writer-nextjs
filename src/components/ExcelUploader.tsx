@@ -24,7 +24,7 @@ import { generateFeedback, validateOpenAIKey } from '@/services/openai';
 interface ExcelData {
   student_name: string;
   essay: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | null;
 }
 
 interface AnalysisResult {
@@ -54,34 +54,7 @@ export const ExcelUploader = () => {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    const excelFile = files.find(file => 
-      file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
-    );
-    
-    if (excelFile) {
-      processExcelFile(excelFile);
-    } else {
-      toast({
-        title: "잘못된 파일 형식",
-        description: "Excel 파일(.xlsx, .xls)만 업로드할 수 있습니다.",
-        variant: "destructive",
-      });
-    }
-  }, []);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      processExcelFile(file);
-    }
-  };
-
-  const processExcelFile = async (file: File) => {
+  const processExcelFile = useCallback(async (file: File) => {
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
@@ -92,7 +65,7 @@ export const ExcelUploader = () => {
       // 데이터 검증 및 변환
       const validData: ExcelData[] = [];
       for (const row of jsonData) {
-        const rowData = row as any;
+        const rowData = row as Record<string, unknown>;
         
         // 학생 이름과 글 내용이 있는지 확인
         const studentName = rowData['학생이름'] || rowData['이름'] || rowData['student_name'] || rowData['name'];
@@ -129,6 +102,33 @@ export const ExcelUploader = () => {
         description: "Excel 파일을 읽을 수 없습니다. 파일 형식을 확인해주세요.",
         variant: "destructive",
       });
+    }
+  }, [toast]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const excelFile = files.find(file => 
+      file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
+    );
+    
+    if (excelFile) {
+      processExcelFile(excelFile);
+    } else {
+      toast({
+        title: "잘못된 파일 형식",
+        description: "Excel 파일(.xlsx, .xls)만 업로드할 수 있습니다.",
+        variant: "destructive",
+      });
+    }
+  }, [processExcelFile, toast]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processExcelFile(file);
     }
   };
 

@@ -9,14 +9,15 @@ import { ArrowLeft, Sparkles, FileText, Heart } from 'lucide-react';
 import { FeedbackDisplay } from '@/components/FeedbackDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { FeedbackData } from '@/types/feedback';
 
 export default function FeedbackPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [feedback, setFeedback] = useState(null);
+  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function FeedbackPage() {
         if (error) throw error;
 
         // 교사가 수정한 피드백이 있으면 그것을 사용, 없으면 원본 피드백 사용
-        setFeedback(data.teacher_modified_feedback || data.feedback_data);
+        setFeedback((data.teacher_modified_feedback || data.feedback_data) as unknown as FeedbackData);
       } catch (error) {
         console.error('Error fetching feedback:', error);
         setError('피드백을 불러올 수 없습니다.');

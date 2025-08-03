@@ -10,15 +10,17 @@ import { EditableFeedbackDisplay } from '@/components/EditableFeedbackDisplay';
 import { FeedbackDisplay } from '@/components/FeedbackDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { FeedbackData } from '@/types/feedback';
+import type { Json } from '@/integrations/supabase/types';
 
 export default function TeacherFeedbackPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [feedback, setFeedback] = useState(null);
-  const [originalFeedback, setOriginalFeedback] = useState(null);
+  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
+  const [originalFeedback, setOriginalFeedback] = useState<FeedbackData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const { toast } = useToast();
 
@@ -35,8 +37,8 @@ export default function TeacherFeedbackPage() {
 
         if (error) throw error;
 
-        setOriginalFeedback(data.feedback_data);
-        setFeedback(data.teacher_modified_feedback || data.feedback_data);
+        setOriginalFeedback(data.feedback_data as unknown as FeedbackData);
+        setFeedback((data.teacher_modified_feedback || data.feedback_data) as unknown as FeedbackData);
       } catch (error) {
         console.error('Error fetching feedback:', error);
         setError('피드백을 불러올 수 없습니다.');
@@ -53,12 +55,12 @@ export default function TeacherFeedbackPage() {
     fetchFeedback();
   }, [id, toast]);
 
-  const handleSaveFeedback = async (updatedFeedback: any) => {
+  const handleSaveFeedback = async (updatedFeedback: FeedbackData) => {
     try {
       const { error } = await supabase
         .from('student_feedback')
         .update({ 
-          teacher_modified_feedback: updatedFeedback,
+          teacher_modified_feedback: updatedFeedback as unknown as Json,
           updated_at: new Date().toISOString()
         })
         .eq('id', id);

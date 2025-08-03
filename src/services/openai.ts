@@ -1,8 +1,19 @@
 // OpenAI API 호출을 위한 프록시 설정
 const API_BASE_URL = '/api/openai';
 
+interface OpenAIMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+interface OpenAIOptions {
+  model?: string;
+  temperature?: number;
+  max_tokens?: number;
+}
+
 // 프록시를 통한 OpenAI API 호출 함수
-const callOpenAI = async (messages: any[], options: any = {}) => {
+const callOpenAI = async (messages: OpenAIMessage[], options: OpenAIOptions = {}) => {
   const response = await fetch(`${API_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {

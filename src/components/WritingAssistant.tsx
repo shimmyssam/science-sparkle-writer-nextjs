@@ -1,28 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
-import { Sparkles, FileText, Upload, Heart, Share2, Copy, Users, User, FileSpreadsheet } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Sparkles, FileText, Upload, Heart, Copy, Users, User, FileSpreadsheet } from 'lucide-react';
 import { FeedbackDisplay } from './FeedbackDisplay';
 import { StudentLinksSection } from './StudentLinksSection';
 import { ExcelUploader } from './ExcelUploader';
 import { supabase } from '@/integrations/supabase/client';
 import { generateFeedback, validateOpenAIKey } from '@/services/openai';
-import { checkEnvironment, testOpenAI } from '@/utils/env-check';
+import { checkEnvironment } from '@/utils/env-check';
+import type { FeedbackData } from '@/types/feedback';
 
 export const WritingAssistant = () => {
   const [studentName, setStudentName] = useState('');
   const [essay, setEssay] = useState('');
-  const [feedback, setFeedback] = useState(null);
+  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [feedbackId, setFeedbackId] = useState(null);
-  const [studentUuid, setStudentUuid] = useState(null);
+  const [feedbackId, setFeedbackId] = useState<string | null>(null);
+  const [studentUuid, setStudentUuid] = useState<string | null>(null);
   const { toast } = useToast();
 
   // 환경변수 및 AI 연동 상태 확인
@@ -110,7 +106,7 @@ export const WritingAssistant = () => {
       console.log('📝 변환된 피드백:', processedFeedback);
 
       // 학생 프로필 확인 및 생성 (UUID 포함)
-      const { data: existingProfile, error: profileCheckError } = await supabase
+      const { data: existingProfile } = await supabase
         .from('student_profiles')
         .select('dashboard_uuid')
         .eq('student_name', studentName)
@@ -145,7 +141,7 @@ export const WritingAssistant = () => {
 
       setFeedback(processedFeedback);
       setFeedbackId(data.id);
-      setStudentUuid(studentUuid);
+      setStudentUuid(studentUuid || null);
       setIsAnalyzing(false);
       
       toast({

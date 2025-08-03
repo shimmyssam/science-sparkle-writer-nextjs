@@ -21,6 +21,7 @@ export type Database = {
           feedback_data: Json
           id: string
           student_name: string
+          teacher_modified_feedback: Json | null
           updated_at: string
         }
         Insert: {
@@ -29,12 +30,38 @@ export type Database = {
           feedback_data: Json
           id?: string
           student_name: string
+          teacher_modified_feedback?: Json | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           essay?: string
           feedback_data?: Json
+          id?: string
+          student_name?: string
+          teacher_modified_feedback?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      student_profiles: {
+        Row: {
+          created_at: string
+          dashboard_uuid: string
+          id: string
+          student_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_uuid?: string
+          id?: string
+          student_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_uuid?: string
           id?: string
           student_name?: string
           updated_at?: string

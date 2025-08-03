@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Heart, Star, CheckCircle, Lightbulb, BookOpen, Target, Edit3, Save, X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { FeedbackData } from '@/types/feedback';
 
 // 마크다운 볼드 텍스트를 HTML로 변환하는 함수
 const renderBoldText = (text: string) => {
@@ -16,32 +17,9 @@ const renderBoldText = (text: string) => {
 };
 
 interface EditableFeedbackProps {
-  feedback: {
-    studentName: string;
-    strengths: string[];
-    improvedSentences: Array<{
-      original: string;
-      improved: string;
-    }>;
-    scientificKnowledge: {
-      present: string[];
-      missing: string[];
-      suggestions: string;
-    };
-    logicalFlow: {
-      rating: number;
-      comment: string;
-    };
-    ratings: {
-      content: { stars: number; comment: string };
-      logicalFlow: { stars: number; comment: string };
-      sentenceExpression: { stars: number; comment: string };
-      scientificKnowledge: { stars: number; comment: string };
-      readerAwareness: { stars: number; comment: string };
-    };
-    tips: string[];
-  };
-  onSave: (updatedFeedback: any) => void;
+  feedback: FeedbackData;
+  originalFeedback?: FeedbackData | null;
+  onSave: (updatedFeedback: FeedbackData) => void;
 }
 
 const StarRating = ({ stars, onStarClick }: { stars: number; onStarClick?: (rating: number) => void }) => {
@@ -101,7 +79,7 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
     }));
   };
 
-  const updateRating = (category: string, field: 'stars' | 'comment', value: any) => {
+  const updateRating = (category: string, field: 'stars' | 'comment', value: string | number) => {
     setEditableFeedback(prev => ({
       ...prev,
       ratings: {
@@ -221,7 +199,7 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
           </Button>
         </div>
         <div className="space-y-4">
-          {editableFeedback.improvedSentences.map((sentence, index) => (
+          {editableFeedback.improvedSentences?.map((sentence, index) => (
             <div key={index} className="space-y-2">
               <div className="p-3 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">원래 문장:</p>
@@ -229,7 +207,7 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
                   <Input
                     value={sentence.original}
                     onChange={(e) => {
-                      const newSentences = [...editableFeedback.improvedSentences];
+                      const newSentences = [...(editableFeedback.improvedSentences || [])];
                       newSentences[index] = { ...newSentences[index], original: e.target.value };
                       setEditableFeedback(prev => ({ ...prev, improvedSentences: newSentences }));
                     }}
@@ -248,7 +226,7 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
                   <Textarea
                     value={sentence.improved}
                     onChange={(e) => {
-                      const newSentences = [...editableFeedback.improvedSentences];
+                      const newSentences = [...(editableFeedback.improvedSentences || [])];
                       newSentences[index] = { ...newSentences[index], improved: e.target.value };
                       setEditableFeedback(prev => ({ ...prev, improvedSentences: newSentences }));
                     }}
@@ -290,7 +268,7 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
               잘 포함된 개념들:
             </h4>
             <div className="flex flex-wrap gap-2">
-              {editableFeedback.scientificKnowledge.present.map((concept, index) => (
+              {editableFeedback.scientificKnowledge?.present?.map((concept, index) => (
                 <Badge key={index} variant="secondary">
                   {concept}
                 </Badge>
@@ -298,14 +276,14 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
             </div>
           </div>
           
-          {editableFeedback.scientificKnowledge.missing.length > 0 && (
+          {editableFeedback.scientificKnowledge?.missing && editableFeedback.scientificKnowledge.missing.length > 0 && (
             <div>
               <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
                 <Target className="h-4 w-4 text-accent" />
                 추가를 고려해보세요:
               </h4>
               <div className="flex flex-wrap gap-2">
-                {editableFeedback.scientificKnowledge.missing.map((concept, index) => (
+                {editableFeedback.scientificKnowledge?.missing?.map((concept, index) => (
                   <Badge key={index} variant="outline">
                     {concept}
                   </Badge>
@@ -317,17 +295,17 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
           <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
             {editModes.knowledge ? (
               <Textarea
-                value={editableFeedback.scientificKnowledge.suggestions}
+                value={editableFeedback.scientificKnowledge?.suggestions || ''}
                 onChange={(e) => setEditableFeedback(prev => ({
                   ...prev,
-                  scientificKnowledge: { ...prev.scientificKnowledge, suggestions: e.target.value }
+                  scientificKnowledge: { ...prev.scientificKnowledge!, suggestions: e.target.value }
                 }))}
                 className="w-full min-h-[80px]"
               />
             ) : (
               <p 
                 className="text-foreground"
-                dangerouslySetInnerHTML={{ __html: renderBoldText(editableFeedback.scientificKnowledge.suggestions) }}
+                dangerouslySetInnerHTML={{ __html: renderBoldText(editableFeedback.scientificKnowledge?.suggestions || '') }}
               />
             )}
           </div>
@@ -353,29 +331,29 @@ export const EditableFeedbackDisplay = ({ feedback, onSave }: EditableFeedbackPr
         </div>
         <div className="flex items-center gap-3">
           <StarRating 
-            stars={editableFeedback.logicalFlow.rating} 
+            stars={editableFeedback.logicalFlow?.rating || 0} 
             onStarClick={editModes.logic ? (rating) => setEditableFeedback(prev => ({
               ...prev,
-              logicalFlow: { ...prev.logicalFlow, rating }
+              logicalFlow: { ...prev.logicalFlow!, rating }
             })) : undefined}
           />
           <span className="text-sm text-muted-foreground">
-            {editableFeedback.logicalFlow.rating}/5 별
+            {editableFeedback.logicalFlow?.rating || 0}/5 별
           </span>
         </div>
         {editModes.logic ? (
           <Textarea
-            value={editableFeedback.logicalFlow.comment}
+            value={editableFeedback.logicalFlow?.comment || ''}
             onChange={(e) => setEditableFeedback(prev => ({
               ...prev,
-              logicalFlow: { ...prev.logicalFlow, comment: e.target.value }
+              logicalFlow: { ...prev.logicalFlow!, comment: e.target.value }
             }))}
             className="w-full min-h-[80px]"
           />
         ) : (
           <p 
             className="text-foreground"
-            dangerouslySetInnerHTML={{ __html: renderBoldText(editableFeedback.logicalFlow.comment) }}
+            dangerouslySetInnerHTML={{ __html: renderBoldText(editableFeedback.logicalFlow?.comment || '') }}
           />
         )}
       </Card>

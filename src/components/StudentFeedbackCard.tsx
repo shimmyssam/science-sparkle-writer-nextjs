@@ -2,15 +2,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, FileText, Star, ExternalLink } from 'lucide-react';
+import type { StudentFeedbackRow } from '@/types/feedback';
 
 interface StudentFeedbackCardProps {
-  feedback: {
-    id: string;
-    created_at: string;
-    feedback_data: any;
-    teacher_modified_feedback?: any;
-  };
-  index: number;
+  feedback: StudentFeedbackRow;
+  index?: number;
   onViewDetails: (id: string) => void;
 }
 
@@ -25,7 +21,7 @@ export const StudentFeedbackCard = ({ feedback, index, onViewDetails }: StudentF
 
   // 평균 별점 계산
   const averageRating = feedbackData.ratings ? 
-    Object.values(feedbackData.ratings).reduce((sum: number, rating: any) => sum + rating.stars, 0) / 
+    Object.values(feedbackData.ratings).reduce((sum: number, rating) => sum + rating.stars, 0) / 
     Object.keys(feedbackData.ratings).length : 0;
 
   return (
@@ -35,7 +31,7 @@ export const StudentFeedbackCard = ({ feedback, index, onViewDetails }: StudentF
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-lg font-semibold">
-              {index + 1}주차
+              {(index ?? 0) + 1}주차
             </Badge>
             {feedback.teacher_modified_feedback && (
               <Badge variant="outline" className="text-xs">

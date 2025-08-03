@@ -26,6 +26,7 @@ export const StudentLinksSection = () => {
 
   useEffect(() => {
     fetchStudents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,9 +66,11 @@ export const StudentLinksSection = () => {
           // 평균 평점 계산
           let averageRating = 0;
           if (feedbackData && feedbackData.length > 0) {
-            const ratings = feedbackData.map(feedback => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const ratings = feedbackData.map((feedback: any) => {
               const data = feedback.teacher_modified_feedback || feedback.feedback_data;
-              if (data.ratings) {
+              if (data?.ratings) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return Object.values(data.ratings).reduce((sum: number, rating: any) => sum + rating.stars, 0) / 
                        Object.keys(data.ratings).length;
               }
@@ -221,7 +224,7 @@ export const StudentLinksSection = () => {
       {filteredStudents.length === 0 && searchTerm && (
         <div className="text-center py-6">
           <p className="text-muted-foreground">
-            "{searchTerm}"에 해당하는 학생이 없어요
+            &ldquo;{searchTerm}&rdquo;에 해당하는 학생이 없어요
           </p>
         </div>
       )}
