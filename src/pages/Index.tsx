@@ -1,9 +1,11 @@
 import { WritingAssistant } from "@/components/WritingAssistant";
 
-export default function Home() {
+const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <WritingAssistant />
     </div>
   );
-}
+};
+
+export default Index;
